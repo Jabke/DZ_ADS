@@ -1,5 +1,4 @@
-/*
-Ссылка на контест: https://contest.yandex.ru/contest/53768/enter
+/*Ссылка на контест: https://contest.yandex.ru/contest/53768/enter
 
 1.4 Инвертируйте значение бита в числе N по его номеру K.
 Формат входных данных. Число N, номер бита K.
@@ -30,6 +29,9 @@ void TestFunction() {
 
 int main() {
     Solution s;
-    std::cout << s.InvertBit(25, 4) << std::endl;
-    return 1;
+    uint original_num = 0;
+    uint K = 0;
+    std::cin >> original_num >> K;
+    std::cout << s.InvertBit(original_num, K);
+    return 0;
 }
