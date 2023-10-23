@@ -171,7 +171,7 @@ class Solution {
             return mid;
         }
 
-        return right;  //  target_number гарантированно есть или большее число
+        return ++right;  //  target_number гарантированно есть или большее число
     }
 //-------------------------------------------------------------------------
 
@@ -196,15 +196,56 @@ class Solution {
  private:
 };
 
-void TestFunctionFirst() {
+
+void TestFunctionFirst(std::string& a, std::string& b) {
     Solution s;
-    std::istringstream in_a("1 4 5 7 8 9 10 11 12 13");
-    std::istringstream in_b("11 12 1");
+    std::istringstream in_a(a);
+    std::istringstream in_b(b);
     CustomArray A{10, in_a};  // sort
     CustomArray B{3, in_b};  // sort
     std::cout << A << std::endl;
     std::cout << B << std::endl;
     std::cout << s.Matching(A, B) << std::endl;
+
+    std::cout << std::endl;
+}
+
+void TestFunctionFirst(const std::string& a = {"-3 -2 -1 7 8 9 10 11 12 13"},
+                       const std::string& b = {"-3 0 -4"}) {
+    Solution s;
+    std::istringstream in_a(a);
+    std::istringstream in_b(b);
+    CustomArray A{10, in_a};  // sort
+    CustomArray B{3, in_b};  // sort
+    std::cout << A << std::endl;
+    std::cout << B << std::endl;
+    std::cout << s.Matching(A, B) << std::endl;
+
+    std::cout << std::endl;
+}
+
+void TestFunctionFinal() {
+    std::string test_array_a[5] = {
+            {"1 4 5 7 8 9 10 11 12 13"},
+            {"100 150 250 310 311 320 350 450 460 470"},
+            {"2 5 5 5 5 9 10 11 12 13"},
+            {"-3 -2 -1 7 8 9 10 11 12 13"},
+            {"-3 -3 -3 -3 -3 9 10 11 12 13"}
+    };
+
+    std::string test_array_b[5] = {
+            {"11 12 1"},  // 7 8 0
+            {"100 500 50"},  // 0 10 0
+            {"5 5 5"},  // 1 1 1
+            {"-3 0 -4"}, // 0 3 0
+            {"-3 -3 200"}  // 0 0 10
+
+
+    };
+
+    for (int i = 0; i < 5; ++i) {
+        TestFunctionFirst(test_array_a[i], test_array_b[i]);
+    }
 }
 
 int main() {
