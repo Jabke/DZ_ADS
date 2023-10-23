@@ -66,7 +66,7 @@ struct CustomArray {
 
     //-------------------------------------------------------------------------
 
-    CustomArray(std::istream& in_num, std::istream& in = std::cin) {
+    explicit CustomArray(std::istream& in_num, std::istream& in = std::cin) {
         in_num >> count_of_elements_;
         array_ = new int[count_of_elements_]{0};
         for (int i = 0;  i < count_of_elements_; ++i)
@@ -90,7 +90,9 @@ std::ostream& operator<<(std::ostream& out, const CustomArray& array) {
 }
 
 //-----CustomPair--------------------------------------------------------------------
-
+/*
+ * Структура для хранения границ интервалов
+ */
 struct CustomPair {
     int a = 0;
     int b = 0;
@@ -120,7 +122,7 @@ class Solution {
      * вернется пара со значениями {-1, -1}.
      */
     CustomPair ExponentialSearch(const CustomArray& A, int target_number) {
-        CustomPair pair{-1, -1};  // This struct contains the indexes of the interval
+        CustomPair pair{-1, -1};
         if (A.array_[0] >= target_number) {  // What if A[0] - our target?
             return pair = {0, 0};
         }
@@ -152,11 +154,13 @@ class Solution {
      */
 
     int BinarySearch(const CustomArray& A, const CustomPair& range, int target_number) {
+        if (range.a == range.b)
+            return range.a;
         int left = range.a;
         int right = range.b;
         int mid = (right + left)/2;
         bool detect = false;
-        while (left < right) {
+        while (left <= right) {
             mid = (right + left)/2;
             if (A.array_[mid] == target_number) {
                 detect = true;
@@ -167,11 +171,12 @@ class Solution {
                 right = mid - 1;
             }
         }
-        if (detect) {
-            return mid;
+        if (A.array_[mid] < target_number) {
+            return ++mid;
         }
 
-        return ++right;  //  target_number гарантированно есть или большее число
+        return mid;
+        //return ++right;  //  target_number гарантированно есть или большее число
     }
 //-------------------------------------------------------------------------
 
@@ -196,27 +201,13 @@ class Solution {
  private:
 };
 
-
-void TestFunctionFirst(std::string& a, std::string& b) {
-    Solution s;
-    std::istringstream in_a(a);
-    std::istringstream in_b(b);
-    CustomArray A{10, in_a};  // sort
-    CustomArray B{3, in_b};  // sort
-    std::cout << A << std::endl;
-    std::cout << B << std::endl;
-    std::cout << s.Matching(A, B) << std::endl;
-
-    std::cout << std::endl;
-}
-
 void TestFunctionFirst(const std::string& a = {"-3 -2 -1 7 8 9 10 11 12 13"},
-                       const std::string& b = {"-3 0 -4"}) {
+                       const std::string& b = {"-3 0 -4"}, int num_A = 10, int num_B = 3) {
     Solution s;
     std::istringstream in_a(a);
     std::istringstream in_b(b);
-    CustomArray A{10, in_a};  // sort
-    CustomArray B{3, in_b};  // sort
+    CustomArray A{num_A, in_a};  // sort
+    CustomArray B{num_B, in_b};  // sort
     std::cout << A << std::endl;
     std::cout << B << std::endl;
     std::cout << s.Matching(A, B) << std::endl;
@@ -257,5 +248,11 @@ int main() {
     CustomArray B{m, std::cin};
 
     std::cout << s.Matching(A, B);
+
+    /* TEST BLOCK
+    TestFunctionFinal();
+    TestFunctionFirst({"1 2"}, {"2"}, 2, 1);
+    TestFunctionFirst({"2 4 5 7"}, {"4 6 1"}, 4, 3);
     return 0;
+    */
 }
