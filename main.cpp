@@ -208,17 +208,13 @@ void TestFunctionFirst() {
 }
 
 int main() {
-    TestFunctionFirst();
+    Solution s;
+    int n = 0;
+    int m = 0;
+    std::cin >> n >> m;
+    CustomArray A{n, std::cin};  // sort
+    CustomArray B{m, std::cin};
+
+    std::cout << s.Matching(A, B);
     return 0;
 }
-// 7 3
-// 1 4 5 7 8 9 10
-// 8 2 1
-
-/*
-10 3
-1 4 5 7 8 9 10 11 12 13
-11 2 1
-
-7 1 0
- */
