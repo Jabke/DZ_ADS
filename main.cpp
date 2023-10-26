@@ -139,7 +139,7 @@ class Solution {
             if (right > (A.count_of_elements_ - 1)) {
                 right = A.count_of_elements_ - 1;
             }
-            if (A.array_[left] <= target_number && A.array_[right] > target_number) {
+            if (A.array_[left] <= target_number && A.array_[right] >= target_number) {  // Тут проблема
                 pair = {left, right};
                 break;
             }
@@ -253,6 +253,8 @@ int main() {
     TestFunctionFinal();
     TestFunctionFirst({"1 2"}, {"2"}, 2, 1);
     TestFunctionFirst({"2 4 5 7"}, {"4 6 1"}, 4, 3);
+    return 0;*/
+
+    //TestFunctionFirst({"19 32 37 46 48 58 60 72 76 84"}, {"13 23 24 25 26 47 49 65 70 73 83 84 100"}, 10, 13);
     return 0;
-    */
 }
