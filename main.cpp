@@ -41,6 +41,15 @@ class Vector {
         capacity_ = 2 * size_;
         array_ = new T[capacity_]{T()};
     }
+
+    Vector(size_t size, const T& default_value) {
+        size_ = size;
+        capacity_ = 2 * size_;
+        array_ = new T[capacity_];
+        for (int i = 0; i < capacity_; ++i)
+            array_[i] = default_value;
+    }
+
     Vector(const Vector& copied_vector) {
         this->size_ = copied_vector.size_;
         this->capacity_ = copied_vector.capacity_;
@@ -160,7 +169,7 @@ void TestFunction() {
 }
 
 int main() {
-    Vector<int> v(2);
+    Vector<int> v(5);
     v(1) = 1;
     std::cout << v << std::endl;
     /*int argument_one = 0;
