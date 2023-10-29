@@ -150,6 +150,11 @@ class Vector {
       this->SetElement(this->idx_last_element_, value);
     }
   }
+  const T& PopBack() {
+    size_--;
+    idx_last_element_--;
+    return array_[idx_last_element_ + 1];
+  }
 //------------------------------------------------------------------------------
 
     int GetSize() const{
@@ -165,6 +170,12 @@ class Vector {
 
   int GetIdxLastElement() const{
     return idx_last_element_;
+  }
+
+//------------------------------------------------------------------------------
+
+  void Swap(int idx1, int idx2) const{
+    std::swap(array_[idx1], array_[idx2]);
   }
 
   private:
@@ -240,19 +251,24 @@ class Heap {
       Siftup(array_.GetIdxLastElement());
     }
 
+
     //------------------------------------------------------------------------------
 
-    int ExtractTop() {
-
+    T ExtractTop() {
+      T buffer_element = array_(0);
+      array_.SetElement(0, array_.PopBack());
+      SiftDown(0);
+      std::cout << 1 << std::endl;
+      return buffer_element;
     }
-
+    //------------------------------------------------------------------------------
+    T Top() {
+      return array_(0);
+    }
     //------------------------------------------------------------------------------
     /*
      * Функция позволяет просмотреть верхний элемент, но не удаляет его из кучи
      */
-    int Top() const {
-
-    }
 
     const Vector<T>& GetArray() const {
       return array_;
@@ -300,13 +316,23 @@ class Heap {
     }
 
     //------------------------------------------------------------------------------
-    void Hepify() {  // Будем идти от последнего элемента к первому и вызывать SiftDown
-
-    }
-    //------------------------------------------------------------------------------
 
     void SiftDown(int sifted_element) {
-
+      int left_buffer = 0;
+      int right_buffer = 0;
+      while(true) {
+        left_buffer = GetLeftChildIndex(sifted_element);
+        if (left_buffer >= array_.GetSize())
+          break;
+        right_buffer = GetRightChildIndex(sifted_element);
+        if (left_buffer < right_buffer) {
+          array_.Swap(GetLeftChildIndex(sifted_element), sifted_element);
+          sifted_element = left_buffer;
+        } else {
+          array_.Swap(GetRightChildIndex(sifted_element), sifted_element);
+          sifted_element = right_buffer;
+        }
+      }
     }
 };
 
@@ -365,21 +391,23 @@ void SolutionFunction(std::ostream& out, std::istream& in, bool is_endl = false)
 }
 
 void TestFunction1() {
-  constexpr int count_of_tests = 4;
+  constexpr int count_of_tests = 5;
   std::istringstream streams_string[count_of_tests];
   streams_string[0].str("3 1 6 2 50 90 3 1 10 70");  // 1 6 70 50 10 90
   streams_string[1].str("2 3 3 10 4 3 2 8 9");  // 2 3 4 10 8 9
   streams_string[2].str("2 3 3 10 4 3 1 50 70");  // 1, 3, 4, 10, 50, 70
   streams_string[3].str("2 3 3 10 4 3 100 115 2");  // 2, 10, 3, 100, 115, 4
+  streams_string[4].str("4 1 3 2 4 5 3 100 115 2 2 120 7");  // 2 4 3 7 115 5 120 100
   std::ostringstream answer;
   std::string answers[count_of_tests] = {
       {"1 6 70 50 10 90"},
       {"2 3 4 10 8 9"},
       {"1 3 4 10 50 70"},
       {"2 10 3 100 115 4"},
+      {"2 4 3 7 115 5 120 100"}
   };
   std::string buffer_string = "";
-  for (int i = 0; i < 4; ++i) {
+  for (int i = 0; i < count_of_tests; ++i) {
     SolutionFunction(answer, streams_string[i]);
     buffer_string = answer.str();
     answer.str("");
@@ -394,7 +422,6 @@ void TestFunction1() {
 }
 
 int main() {
-  //TestFunction1();
   SolutionFunction(std::cout, std::cin);
   return 0;
 }
