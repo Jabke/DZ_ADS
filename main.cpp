@@ -37,14 +37,17 @@ struct OutOfRange : public std::exception {
 template<typename T>
 class Vector {
   public:
-  Vector() : size_(0), capacity_(0), idx_last_element_(0) {
+  Vector() : size_(0), idx_last_element_(0) {
+    array_ = new T[capacity_]{T()};
   }
+
 //------------------------------------------------------------------------------
 
   Vector(size_t capacity) {
     size_ = 0;
     capacity_ = capacity;
     array_ = new T[capacity_]{T()};
+    idx_last_element_ = 0;
   }
 
 //------------------------------------------------------------------------------
@@ -124,38 +127,28 @@ class Vector {
         if (idx != 0)
           idx_last_element_++;
       }
-  /*
-      if (size_ + 1 >= capacity_) {
-        capacity_ *= 2;
-        T* new_array = new T[this->capacity_]{T()};
-        for (int i = 0; i < this->size_; ++i)
-          new_array[i] = this->array_[i];
-        delete[] array_;
-        array_ = new_array;
-      }
-      array_[idx] = value;
-      if (idx >= size_)
-        size_++;*/
     }
 
 //------------------------------------------------------------------------------
 
-     T operator()(int i) const {  // Просто возвращает вызванный элемент
+     const T& operator()(int i) const {  // Просто возвращает вызванный элемент
         try {
             if (i >= this->size_)
                 throw OutOfRange();
-            T &element = this->array_[i];
-            return element;
+            // T &element = this->array_[i];
+            return this->array_[i];;
         } catch(OutOfRange& e) {
             std::cout << e.what() << std::endl;
         }
     }
 
 //------------------------------------------------------------------------------
-  void PushBack(T value) {
-    if (size_ != 0)
+  void PushBack(const T& value) {
+    if (size_ != 0) {
       this->SetElement(this->idx_last_element_ + 1, value);
-    this->SetElement(this->idx_last_element_, value);
+    } else {
+      this->SetElement(this->idx_last_element_, value);
+    }
   }
 //------------------------------------------------------------------------------
 
@@ -176,7 +169,7 @@ class Vector {
 
   private:
     T* array_ = nullptr;
-    size_t capacity_ = 0;
+    size_t capacity_ = 200;
     size_t size_ = 0;
     size_t idx_last_element_ = 0;
 };
@@ -185,9 +178,13 @@ class Vector {
 
 template<typename T>
 std::ostream& operator<<(std::ostream& out, const Vector<T>& v) {
-    for (int i = 0; i < v.GetSize(); ++i)
-        out << v(i) << " ";
-
+    for (int i = 0; i < v.GetSize(); ++i) {
+      if (i == v.GetSize() - 1) {
+        out << v(i);
+        continue;
+      }
+      out << v(i) << " ";
+    }
     return out;
 }
 
@@ -217,7 +214,7 @@ class Heap {
      * все элементы из него в новый массив(метод Add)
      * Второй вариант, создать кучу из переданного массива
      */
-    explicit Heap(Vector<T> array) : array_(array.GetCapacity()) {
+    explicit Heap(const Vector<T>& array) : array_(array.GetCapacity()) {
       for (int i = 0; i < array.GetSize(); ++i) {
         this->array_.SetElement(i, array(i));
         Siftup(i);
@@ -257,7 +254,7 @@ class Heap {
 
     }
 
-    Vector<T> GetArray() const {
+    const Vector<T>& GetArray() const {
       return array_;
     }
 
@@ -332,89 +329,72 @@ std::ostream& operator<<(std::ostream& out, const Heap<T, Comparator>& heap) {
 template<typename T, typename Comp = DefaultComparator<T>>
 class Solution {
  public:
-    void CombiningArray(Heap<T, Comp>& heap, Vector<T> v) {
+    Heap<T, Comp> CombiningArray(Heap<T, Comp>& heap, const Vector<T>& v) {
       for (int i = 0; i < v.GetSize(); ++i) {
         heap.Add(v(i));
       }
+      return heap;
     }
  private:
 };
 
-void TestFunction() {
-
-  constexpr int count_tests = 2;
-  constexpr int count_arrays = 4;
-  std::string values[count_arrays] = {
-      {"3 10 4 "},
-      {"2 8 9 "},
-      {"1 50 70"},
-      {"100 115 2"}};
-
-  std::string sizes[count_arrays] {
-      {"3"},
-      {"3"},
-      {"3"},
-      {"3"}
-  };
-  Vector<Vector<int>> vecor_of_vectors(count_arrays);
-  int solution[3][6] = {{2, 3, 4, 10, 8, 9},
-                        {1, 3, 4, 10, 50, 70},
-                        {2, 10, 3, 100, 115, 4}};
-
+void SolutionFunction(std::ostream& out, std::istream& in, bool is_endl = false) {
+  int count_arrays = 0;
+  in >> count_arrays;
+  Vector<int>* vector_of_vectors = new Vector<int>[count_arrays];
   for (int i = 0; i < count_arrays; ++i) {
-    std::istringstream sizes_stream(sizes[i]);
-    std::istringstream values_stream(values[i]);
-
-    sizes_stream.str(sizes[i]);
-    values_stream.str(values[i]);
-    int s = 0;
-    sizes_stream >> s;
-    Vector<int> v(s);
-    for (int j = 0; j < s; ++j) {
-      int val = 0;
-      values_stream >> val;
-      v.SetElement(j, val);
+    int count_of_elements = 0;
+    in >> count_of_elements;
+    for (int j = 0; j < count_of_elements; ++j) {
+      int current_element = 0;
+      in >> current_element;
+      vector_of_vectors[i].PushBack(current_element);
     }
-    vecor_of_vectors.SetElement(i, v);
   }
-  for (int i = 0; i < count_arrays; ++i) {
-    std::cout << "v[" << i << "]: " << vecor_of_vectors(i) << std::endl;
-  }
-
+  Heap<int> heap(vector_of_vectors[0]);
+  Solution<int> s;
   for (int i = 1; i < count_arrays; ++i) {
-    Heap<int> heap(vecor_of_vectors(0));
-    Solution<int> s;
-    s.CombiningArray(heap, vecor_of_vectors(i));
-    Vector<int> v = heap.GetArray();
-    std::cout << "Test " << i << ": " << v;
-    bool test_flag = true;
-    for (int j = 0; j < 6; ++j) {
-      if (solution[i - 1][j] == v(j)) {
-        continue;
-      }
-      test_flag = false;
-      break;
-    }
-    if (test_flag) {
-      std::cout << " OK" << std::endl;
+    s.CombiningArray(heap, vector_of_vectors[i]);
+  }
+  if (is_endl == false) {
+    out << heap;
+  } else {
+    out << heap << std::endl;
+  }
+  delete[] vector_of_vectors;
+}
+
+void TestFunction1() {
+  constexpr int count_of_tests = 4;
+  std::istringstream streams_string[count_of_tests];
+  streams_string[0].str("3 1 6 2 50 90 3 1 10 70");  // 1 6 70 50 10 90
+  streams_string[1].str("2 3 3 10 4 3 2 8 9");  // 2 3 4 10 8 9
+  streams_string[2].str("2 3 3 10 4 3 1 50 70");  // 1, 3, 4, 10, 50, 70
+  streams_string[3].str("2 3 3 10 4 3 100 115 2");  // 2, 10, 3, 100, 115, 4
+  std::ostringstream answer;
+  std::string answers[count_of_tests] = {
+      {"1 6 70 50 10 90"},
+      {"2 3 4 10 8 9"},
+      {"1 3 4 10 50 70"},
+      {"2 10 3 100 115 4"},
+  };
+  std::string buffer_string = "";
+  for (int i = 0; i < 4; ++i) {
+    SolutionFunction(answer, streams_string[i]);
+    buffer_string = answer.str();
+    answer.str("");
+    std::cout << buffer_string;
+    if (buffer_string == answers[i]) {
+      buffer_string = " OK";
     } else {
-      std::cout << " WA" << std::endl;
+      buffer_string = " WA";
     }
+    std::cout << buffer_string << std::endl;
   }
 }
 
 int main() {
-  /*
-  * in       out
-  * 3        1 6 10 50 70 90
-      * 1
-      * 6
-      * 2
-      * 50 90
-      * 3
-      * 1 10 70
-*/
-
-
+  //TestFunction1();
+  SolutionFunction(std::cout, std::cin);
   return 0;
 }
