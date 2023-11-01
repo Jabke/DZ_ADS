@@ -255,10 +255,13 @@ class Heap {
     //------------------------------------------------------------------------------
 
     T ExtractTop() {
+      if (array_.GetSize() == 1) {
+        return array_.PopBack();
+      }
       T buffer_element = array_(0);
       array_.SetElement(0, array_.PopBack());
+      T buffer_debug = array_(0);
       SiftDown(0);
-      std::cout << 1 << std::endl;
       return buffer_element;
     }
     //------------------------------------------------------------------------------
@@ -274,7 +277,27 @@ class Heap {
       return array_;
     }
 
-  private:
+    int GetSize() {
+      return array_.GetSize();
+    }
+  //------------------------------------------------------------------------------
+  Vector<T> HeapSort() {
+      int buffer = 0;
+      Vector<T> resualt;
+      int size = array_.GetSize();
+      int j = 0;
+      for (int i = 0; i < size;) {
+        size = array_.GetSize();
+        if (size == 0)
+          break;
+        T buffer_debug = this->ExtractTop();
+        resualt.SetElement(j, buffer_debug);
+        j++;
+      }
+      array_ = resualt;
+    return resualt;
+    }
+ private:
     Comparator comparator_;
     Vector<T> array_;
     //------------------------------------------------------------------------------
@@ -302,22 +325,36 @@ class Heap {
       T debug_element = array_(sifted_element);
       int buffer = 0;
       int parent_index = 0;
+      int left_index = 0;
+      int right_index = 0;
       while (sifted_element != 0) {
-        parent_index = GetParentIndex(sifted_element);
+        parent_index = GetParentIndex(sifted_element);  // Получение индекса родительского элемента
         if (!comparator_(array_(sifted_element), array_(parent_index))) {
-          buffer = array_(parent_index);
-          array_.SetElement(parent_index, array_(sifted_element));
-          array_.SetElement(sifted_element, buffer);
+          array_.Swap(sifted_element, parent_index);
           sifted_element = parent_index;
         } else {
           break;
         }
       }
+      // std::cout << array_ << std::endl;
     }
 
     //------------------------------------------------------------------------------
 
     void SiftDown(int sifted_element) {
+      if (array_.GetSize() <= 1)
+        return;
+      if (array_.GetSize() == 2) {
+          T buffer_debug_1 = array_(0);
+          T buffer_debug_2 = array_(1);
+        if (array_(0) > array_(1)) {
+          array_.Swap(0, 1);
+          return;
+        } else {
+          return;
+        }
+      }
+
       int left_buffer = 0;
       int right_buffer = 0;
       while(true) {
@@ -325,12 +362,20 @@ class Heap {
         if (left_buffer >= array_.GetSize())
           break;
         right_buffer = GetRightChildIndex(sifted_element);
-        if (left_buffer < right_buffer) {
-          array_.Swap(GetLeftChildIndex(sifted_element), sifted_element);
-          sifted_element = left_buffer;
+        if (right_buffer >= array_.GetSize())
+          break;
+        T buffer_debug_3 = array_(left_buffer);
+        T buffer_debug_4 = array_(right_buffer);
+        if (comparator_(array_(sifted_element), array_(left_buffer)) || comparator_(array_(sifted_element), array_(right_buffer))) {
+          if (!comparator_(array_(left_buffer), array_(right_buffer))) {
+            array_.Swap(GetLeftChildIndex(sifted_element), sifted_element);
+            sifted_element = left_buffer;
+          } else {
+            array_.Swap(GetRightChildIndex(sifted_element), sifted_element);
+            sifted_element = right_buffer;
+          }
         } else {
-          array_.Swap(GetRightChildIndex(sifted_element), sifted_element);
-          sifted_element = right_buffer;
+          break;
         }
       }
     }
@@ -383,9 +428,9 @@ void SolutionFunction(std::ostream& out, std::istream& in, bool is_endl = false)
     s.CombiningArray(heap, vector_of_vectors[i]);
   }
   if (is_endl == false) {
-    out << heap;
+    out << heap.HeapSort();
   } else {
-    out << heap << std::endl;
+    out << heap.HeapSort() << std::endl;
   }
   delete[] vector_of_vectors;
 }
@@ -393,18 +438,18 @@ void SolutionFunction(std::ostream& out, std::istream& in, bool is_endl = false)
 void TestFunction1() {
   constexpr int count_of_tests = 5;
   std::istringstream streams_string[count_of_tests];
-  streams_string[0].str("3 1 6 2 50 90 3 1 10 70");  // 1 6 70 50 10 90
-  streams_string[1].str("2 3 3 10 4 3 2 8 9");  // 2 3 4 10 8 9
-  streams_string[2].str("2 3 3 10 4 3 1 50 70");  // 1, 3, 4, 10, 50, 70
-  streams_string[3].str("2 3 3 10 4 3 100 115 2");  // 2, 10, 3, 100, 115, 4
-  streams_string[4].str("4 1 3 2 4 5 3 100 115 2 2 120 7");  // 2 4 3 7 115 5 120 100
+  streams_string[0].str("3 1 6 2 50 90 3 1 10 70");  // 1 6 70 50 10 90 (1 6 10 50 70 90)
+  streams_string[1].str("2 3 3 4 10 3 2 8 9");  // 2 3 4 10 8 9
+  streams_string[2].str("2 3 3 4 10 3 1 50 70");  // 1, 3, 4, 10, 50, 70
+  streams_string[3].str("2 3 3 4 10 3 2 100 115");  // 2, 10, 3, 100, 115, 4
+  streams_string[4].str("4 1 3 2 4 5 3 2 100 115 2 7 120");  // 2 4 3 7 115 5 120 100
   std::ostringstream answer;
   std::string answers[count_of_tests] = {
-      {"1 6 70 50 10 90"},
-      {"2 3 4 10 8 9"},
+      {"1 6 10 50 70 90"},
+      {"2 3 4 8 9 10"},
       {"1 3 4 10 50 70"},
-      {"2 10 3 100 115 4"},
-      {"2 4 3 7 115 5 120 100"}
+      {"2 3 4 10 100 115"},
+      {"2 3 4 5 7 100 115 120"}
   };
   std::string buffer_string = "";
   for (int i = 0; i < count_of_tests; ++i) {
@@ -422,6 +467,7 @@ void TestFunction1() {
 }
 
 int main() {
+  // TestFunction1();
   SolutionFunction(std::cout, std::cin);
   return 0;
 }
