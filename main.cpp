@@ -1,9 +1,30 @@
 /*Галкин Сергей Autumn2023 WEB-13*/
 
 /*Ссылка на контест: https://contest.yandex.ru/contest/53768/enter
+ *
+ *
+
+Реализовать очередь с динамическим зацикленным буфером.
+
+Обрабатывать команды push back и pop front.
+Формат ввода
+
+В первой строке количество команд n. n ≤ 1000000.
+
+Каждая команда задаётся как 2 целых числа: a b.
+
+a = 2 - pop front
+a = 3 - push back
+
+Если дана команда pop front, то число b - ожидаемое значение. Если команда pop front вызвана для пустой структуры данных, то ожидается “-1”.
+Формат вывода
+
+Требуется напечатать YES - если все ожидаемые значения совпали. Иначе, если хотя бы одно ожидание не оправдалось, то напечатать NO.
 */
 
 #include <iostream>
+#include <string>
+#include <sstream>
 
 class Queue {
  public:
@@ -16,24 +37,43 @@ class Queue {
     array_ = new int[buffer_size_]{0};
   }
 
+  Queue(int array_size, int* array) {
+    buffer_size_ = 2*array_size;
+    queue_size_ = array_size;
+    array_ = new int[buffer_size_]{0};
+    for(int i = 0; i < queue_size_; ++i) {
+      array_[i] = array[i];
+    }
+    head_ = 0;
+    tail_ = array_size - 1;
+  }
+
   ~Queue() {
    delete[] array_;
   }
   void PushBack(int element) {
     if (head_ == -1 || tail_ == -1) {
       head_ = 0;
+      tail_ = 0;
     }
     if (queue_size_ == buffer_size_)
-
-    array_[queue_size_] = element;
+      Expand();
+    int debug_buffer = (tail_ + 1)%buffer_size_;
+    if (queue_size_ == 0)
+      debug_buffer = 0;
+    array_[debug_buffer] = element;
     tail_ = queue_size_;
     queue_size_++;
   }
 
   int PopFront() {
+    if (queue_size_ == 0)
+      return -1;  // Условие задачи
     int buffer = array_[head_];
     head_++;
     queue_size_--;
+    if (queue_size_ <= (buffer_size_/3))
+       Reduce();
     return buffer;
   }
 
@@ -44,24 +84,83 @@ class Queue {
   int GetBufferSize() {
     return this->buffer_size_;
   }
+
+  int GetHeadElement() {
+    return array_[head_];
+  }
+
+  int GetTailElement() {
+    return array_[tail_];
+  }
+  void OutBuffer() {
+    std::cout << "Buffer ";
+    for (int i = 0; i < buffer_size_; ++i) {
+      std::cout << array_[i] << " " ;
+    }
+    std::cout << std::endl;
+  }
+  void OutQueue() {
+    std::cout << "Queue ";
+    for (int i = 0; i < queue_size_; ++i) {
+      if ((head_ + i) < (buffer_size_ - 1)) {
+        std::cout << array_[head_ + i] << " ";
+      } else {
+        std::cout << array_[i] << " ";
+      }
+    }
+    std::cout << std::endl;
+  }
  private:
   int* array_ = nullptr;
-  int buffer_size_ = 5;
+  int buffer_size_ = 3;
   int queue_size_ = 0;
   int head_ = -1;  // Индекс первого элемента в очереди
   int tail_ = -1;  // Индекс последнего элемента в очереди
 
   void Expand() {
     if (array_ != nullptr) {
-      int* new_array = new int[buffer_size_*2];
-      for (int i = 0;)
+      int* new_array = new int[2*buffer_size_]{0};
+      int j = 0;
+      /*for (int i = tail_; i != head_; i = ((i + 1)%buffer_size_)) {
+        new_array[j] = array_[i];
+        std::cout << array_[i] << std::endl;
+        j++;
+      }*/
+      for (int i = 0; i < queue_size_; ++i) {
+        /*
+         * head_ + i - ищем элемент в середине массива;
+         * buffer_size_ - 1 - пока не дойдем до кона массива
+         */
+        if ((head_ + i) < (buffer_size_ - 1)) {
+          new_array[i] = array_[head_ + i];
+        } else {
+          new_array[i] = array_[i];
+        }
+      }
+      buffer_size_ *= 2;
+      delete[] array_;
+      head_ = 0;
+      tail_ = queue_size_ - 1;
+      array_ = new_array;
     }
   }
 
   void Reduce() {
-    /*
-     *
-     */
+    if (queue_size_ <= (buffer_size_ / 3) && buffer_size_ / 2 > 2) {
+      buffer_size_ /= 2;
+      int* new_array = new int[buffer_size_]{0};
+      for (int i = 0; i < queue_size_; ++i) {
+        if ((head_ + i) < (buffer_size_ - 1)) {
+          new_array[i] = array_[head_ + i];
+        } else {
+          new_array[i] = array_[i];
+        }
+      }
+      delete[] array_;
+      head_ = 0;
+      tail_ = queue_size_ - 1;
+      array_ = new_array;
+    }
   }
 
 
@@ -75,32 +174,97 @@ std::ostream& operator <<(std::ostream& out, const Queue& queue) {
   } else {
 
   }
+  /*for (int i = 0; i < queue.buffer_size_; ++i) {
+    out << queue.array_[i] << " ";
+  }*/
   return out;
 }
 
 class Solution {
  public:
+  void YesOrNo(std::ostream& out, std::istream& in) {
+    int quantity_elements = 0;
+    in >> quantity_elements;
+    int method_selection = 0;
+    int expected_value = 0;
+    Queue queue;
+    bool flag = true;
+    int debug_buffer = 0;
+    for (int i = 0; i < quantity_elements; ++i) {
+      in >> method_selection;
+      in >> expected_value;
+      switch (method_selection) {
+        case 2:
+          debug_buffer = queue.PopFront();
+          if (expected_value == debug_buffer && flag) {
+            flag = true;
+          } else {
+            flag = false;
+          }
+          break;
+        case 3:
+          queue.PushBack(expected_value);
+          break;
+      }
+      /*queue.OutQueue();
+      queue.OutBuffer();*/
+    }
+    if (flag == true) {
+      out << "YES";
+    } else {
+      out << "NO";
+    }
+
+  }
  private:
 };
 
 void TestFunction() {
+  constexpr int count_of_tests = 10;
+  std::istringstream streams_string[count_of_tests];
+  streams_string[0].str("3 3 44 3 50 2 44");
+  streams_string[1].str("2 2 -1 3 10");
+  streams_string[2].str("2 3 44 2 66");
+  streams_string[3].str("5 2 -1 2 -1 3 44 3 -44 2 44");
+  streams_string[4].str("10 3 5 3 6 3 44 3 -44 3 54 3 44 3 20 3 30 3 20 2 5");  // должно быть yes
+  streams_string[5].str("6 3 5 3 6 3 44 3 -44 2 5 2 6 2 44 2 -44");  // Сначала расширяется потом сжимается
+  streams_string[6].str("6 3 5 3 6 3 44 2 5 3 54 2 6");  // 5 6 44 -> 0 6 44 -> 54 6 44
+  streams_string[7].str("6 3 5 3 6 3 44 3 55 2 5 2 6 3 56 2 44"); // Сначала расширяемся, потом получаем нечто такое 0 * * * 0 0
+  streams_string[8].str("8 3 5 3 6 3 44 3 55 2 5 2 6 3 56 2 -1");  // Расширение -> выем -> добавление -> расширение
+  streams_string[9].str("9 3 5 3 6 3 44 3 55 2 5 2 6 3 56 2 -1 2 55");  // Не верно одно число в середине
+
+    // Значение не совпало где-то посередине
+  Solution s;
+  std::ostringstream answer;
+  std::string answers[count_of_tests] = {
+      {"YES"},
+      {"YES"},
+      {"NO"},
+      {"YES"},
+      {"YES"},
+      {"YES"},
+      {"YES"},
+      {"YES"},
+      {"NO"},
+      {"NO"}
+  };
+  std::string buffer_string = "";
+  for (int i = 0; i < count_of_tests; ++i) {
+    s.YesOrNo(answer, streams_string[i]);
+    buffer_string = answer.str();
+    answer.str("");
+    if (buffer_string == answers[i]) {
+      std::cout << "Test " << i << " OK" << std::endl;
+    } else {
+      std::cout << "Test " << i << " WA" << std::endl;
+    }
+  }
+
 }
 
 int main() {
-  /*int argument_one = 0;
-    int argument_two = 0;
-    std::cin >> argument_one >> argument_two;
-    std::cout << "Repo" << std::endl;*/
-  Queue que;
-  que.PushBack(5);
-  que.PushBack(2);
-  que.PushBack(3);
-  std::cout << "Buffer Size " << que.GetBufferSize() << std::endl;
-  std::cout << "Queue Size " <<  que.GetQueueSize() << std::endl;
-  std::cout << que.PopFront() << std::endl;
-  std::cout << "Buffer Size " << que.GetBufferSize() << std::endl;
-  std::cout << "Queue Size " << que.GetQueueSize() << std::endl;
-
-    std::cout << que << std::endl;
-    return 0;
+  //TestFunction();
+  Solution s;
+  s.YesOrNo(std::cout, std::cin);
+  return 0;
 }
