@@ -61,8 +61,8 @@ class Queue {
     int debug_buffer = (tail_ + 1)%buffer_size_;
     if (queue_size_ == 0)
       debug_buffer = 0;
+    tail_ = debug_buffer;
     array_[debug_buffer] = element;
-    tail_ = queue_size_;
     queue_size_++;
   }
 
@@ -108,14 +108,31 @@ class Queue {
     std::cout << std::endl;
   }
   void OutQueue() {
+    std::cout << "size: " << queue_size_ << " " << head_ << " " << tail_ << std::endl;
     std::cout << "Queue ";
+    /*
     for (int i = 0; i < queue_size_; ++i) {
       if ((head_ + i) < (buffer_size_ - 1)) {
         std::cout << array_[head_ + i] << " ";
       } else {
         std::cout << array_[i] << " ";
       }
+    }*/
+
+    // Проход по очереди
+    if (queue_size_ == 0) {
+      std::cout << "EMPTY" << std::endl;
+      return;
     }
+    std::cout << array_[head_] << " ";
+    for (int i = head_; i != tail_; i = (i + 1)%buffer_size_) {
+      if (i == head_)
+        continue;
+      std::cout << array_[i] << " ";
+    }
+    if (head_ != tail_)
+      std::cout << array_[tail_] << " ";
+
     std::cout << std::endl;
   }
  private:
@@ -214,7 +231,9 @@ class Solution {
           queue.PushBack(expected_value);
           break;
       }
-      /*queue.OutQueue();
+      /*std::cout << std::endl;
+      std::cout << i << ")" << std::endl;
+      queue.OutQueue();
       queue.OutBuffer();*/
     }
     if (flag == true) {
@@ -228,9 +247,9 @@ class Solution {
 };
 
 void TestFunction() {
-  constexpr int count_of_tests = 20;
+  constexpr int count_of_tests = 21;
   std::istringstream streams_string[count_of_tests];
-  streams_string[0].str("3 3 44 3 50 2 44");
+  streams_string[20].str("3 3 44 3 50 2 44");
   streams_string[1].str("2 2 -1 3 10");
   streams_string[2].str("2 3 44 2 66");
   streams_string[3].str("5 2 -1 2 -1 3 44 3 -44 2 44");
@@ -250,16 +269,17 @@ void TestFunction() {
   streams_string[17].str("7 3 10 3 11 3 12 2 -1 2 11 2 12 2 -1");
   streams_string[18].str("8 2 2 2 11 3 10 3 -1 2 10 3 10 2 -1 2 10");
   streams_string[19].str("7 3 -2 3 -11 2 -2 2 -11 2 -10 3 -10 2 -10");
-  // streams_string[10].str("9 3 5 3 4 3 6 2 5 2 4 3 7 3 8 2 6 2 7");
 
+  // streams_string[10].str("9 3 5 3 4 3 6 2 5 2 4 3 7 3 8 2 6 2 7");
+  streams_string[0].str("15 3 96 2 96 3 3 2 3 3 91 2 91 3 3 3 44 2 3 3 17 2 44 3 141 2 17 3 106 3 108");
     // Значение не совпало где-то посередине
   Solution s;
   std::ostringstream answer;
- /* std::string buffer_string = "";
+  /*std::string buffer_string = "";
   s.YesOrNo(answer, streams_string[0]);
   buffer_string = answer.str();
   answer.str("");
-  if (buffer_string == answers[0]) {
+  if (buffer_string == "YES") {
     std::cout << "Test " << 0 << " OK" << std::endl;
   } else {
     std::cout << "Test " << 0 << " WA" << std::endl;
@@ -285,6 +305,7 @@ void TestFunction() {
       {"NO"},
       {"NO"},
       {"NO"},
+      {"YES"}
   };
 
   std::string buffer_string = "";
