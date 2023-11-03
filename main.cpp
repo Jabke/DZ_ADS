@@ -4,17 +4,14 @@
 */
 
 #include <iostream>
-
-class Solution {
- public:
- private:
-};
+#include <sstream>
+#include <string>
 
 template<typename T>
 class DefaultComparator {
  public:
   bool operator()(const T &first_element, const T &second_element) {
-    if (first_element >= second_element) {
+    if (first_element > second_element) {
       return true;
     } else {
       return false;
@@ -22,41 +19,126 @@ class DefaultComparator {
   }
 };
 
-template<typename T, typename Comparator = DefaultComparator<T>>
-void Partition(int size_array, int* array) {
-  Comparator comparator;  // 1st > 2nd
-  int index_partition = std::rand()%(size_array-1);
-  int partition = array[index_partition];
-  std::cout << partition << std::endl;
-  std::swap(array[size_array-1], array[index_partition]);
-  int i = -1;
-  int j = -1;
-  while (true) {
-    if (j == size_array-2)
-      break;
-    j++;
-    if (comparator(array[j], partition)) { // array[j] > partition
-      continue;
-    } else {
+template <typename T, typename Comparator = DefaultComparator<T>>
+int Partition(int* array, int left_idx, int right_idx) {
+  if (left_idx == right_idx)
+    return left_idx;
+
+  int p_idx = rand()%(right_idx - left_idx) + left_idx;  // 9, -2, - 10, 30, 33, 21, 40, 55, 50, 41
+  std::swap(array[p_idx], array[right_idx]);
+  int i = left_idx;
+  int j = left_idx;
+  Comparator comp;
+  while (i < right_idx && !comp(array[i], array[right_idx])) {  // Останавливается когда i указывает на первый элемент меньше заданного
+    ++i;
+  }
+
+  if (i == right_idx) {
+    j = right_idx;
+  } else {
+    j = i + 1;
+  }
+
+  int debug3 = array[right_idx];
+  while (j != right_idx) {  // Останавливается когда указывает на i
+    debug3 = array[right_idx];
+    if (/*array[j] <= array[right_idx]*/!comp(array[j], array[right_idx])) { // comp(array[j] < array[right_idx]
+      std::swap(array[i], array[j]);
       i++;
-      std::swap(array[j], array[i]);
+    }
+    j++;
+  }
+
+  std::swap(array[i], array[j]);
+  return i;  // индекс элемента в полученном массиве
+}
+
+template <typename T, typename Comparator = DefaultComparator<T>>
+int kth_stat(int size_array, int* array, float less_then, Comparator comp = Comparator()) {
+  int required_idx = less_then*size_array;
+  int kth_stat_idx = -1;
+  int left_idx = 0;
+  int right_idx = size_array - 1;
+  while (left_idx <= right_idx) {
+    kth_stat_idx = Partition<T>(array, left_idx, right_idx);
+    if (kth_stat_idx == required_idx) {
+      break;
+    } else if (kth_stat_idx > required_idx) {
+      right_idx = kth_stat_idx - 1;
+    } else {
+      left_idx = kth_stat_idx + 1;
     }
   }
-  std::cout << i << " |";
-  for (int i = 0; i < j - 1; ++i)
-    std::cout << "   ";
-  std::cout << j << " | " << std::endl;
+  return array[kth_stat_idx];
 }
 
-void TestFunction() {
-}
 
-int main() {
-  int array[6] = {21, 20, 13, 14, 38, 16};
-  Partition<int>(6, array);
-  for (int i = 0; i < 6; i++) {
-    std::cout << array[i] << " ";
+
+void Tests() {
+  constexpr int count_of_tests = 7;
+  std::istringstream streams_string[count_of_tests];
+  streams_string[0].str("10 1 2 3 4 5 6 7 8 9 10");
+  streams_string[1].str("3 1 2 3");
+  streams_string[2].str("5 9 15 22 33 50");
+  streams_string[3].str("15 2 9 15 22 32 33 40 41 50 55 60 91 100 101 200");
+  streams_string[4].str("10 -2 9 10 21 30 33 40 41 50 55");
+  streams_string[5].str("3 2 1 3");
+  streams_string[6].str("10 9 -2 10 30 33 21 40 55 50 41");
+  std::string answers[count_of_tests] = {
+      {"2\n6\n10\n"},
+      {"1\n2\n3\n"},
+      {"9\n22\n50\n"},
+      {"9\n41\n101\n"},
+      {"9\n33\n55\n"},
+      {"1\n2\n3\n"},
+      {"9\n33\n55\n"},
+  };
+  std::string buffer_string = "";
+  int array_size = 0;
+  std::ostringstream answer;
+
+  for (int i = 0; i < count_of_tests; ++i) {
+    answer.str("");
+    streams_string[i] >> array_size;
+    int* array = new int[array_size];
+    for (int j = 0; j < array_size; ++j)
+      streams_string[i] >> array[j];
+    answer << kth_stat<int>(array_size, array, 0.1) << std::endl;
+    answer << kth_stat<int>(array_size, array, 0.5) << std::endl;
+    answer << kth_stat<int>(array_size, array, 0.9) << std::endl;
+    buffer_string = answer.str();
+    std:: cout << buffer_string;
+    if (buffer_string == answers[i]) {
+      std::cout << "Test " << i << " OK" << std::endl;
+    } else {
+      std::cout << "Test " << i << " WA" << std::endl;
+    }
+    delete[] array;
   }
-  std::cout << std::endl;
+
+}
+int main()
+{
+  /*DefaultComparator<int> C;
+  constexpr int count_of_elements = 10;
+  int array[count_of_elements] = {10, 24, 31, 42, 54, 66, 7, 8, 9, 11};
+  int array1[count_of_elements] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+  int array2[10] = {9, -2, - 10, 30, 33, 21, 40, 55, 50, 41};
+  std::cout << Partition<int>(array2, 0, 9) << std::endl;
+
+  for (int i = 0; i < 10; ++i) {
+    std::cout << array2[i] << " ";
+  }
+  std::cout << std::endl;*/
+  int size = 0;
+  std::cin >> size;
+  int* array = new int[size];
+  for (int i = 0; i < size; ++i)
+    std::cin >> array[i];
+  std::cout << kth_stat<int>(size, array, 0.1) << std::endl;
+  std::cout << kth_stat<int>(size, array, 0.5) << std::endl;
+  std::cout << kth_stat<int>(size, array, 0.9) << std::endl;
+  // Tests();
   return 0;
 }
+
