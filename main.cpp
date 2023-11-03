@@ -1,6 +1,40 @@
 /*Галкин Сергей Autumn2023 WEB-13*/
 
 /*Ссылка на контест: https://contest.yandex.ru/contest/53768/enter
+ *
+ *
+  Дано множество целых чисел из [0..10^9] размера n.
+
+  Используя алгоритм поиска k-ой порядковой статистики, требуется найти следующие параметры множества:
+      10% перцентиль
+      медиана
+      90% перцентиль
+
+ 6_3. Реализуйте стратегию выбора опорного элемента “случайный элемент”. Функцию Partition реализуйте методом
+ прохода двумя итераторами от начала массива к концу.
+
+  Требования:
+      К дополнительной памяти: O(n).
+      Среднее время работы: O(n)
+      Должна быть отдельно выделенная функция partition.
+      Рекурсия запрещена.
+      Решение должно поддерживать передачу функции сравнения снаружи.
+
+  Формат ввода
+  Сначала вводится кол-во элементов массива n. После сам массив.
+  Формат вывода
+
+  Параметры множества в порядке:
+      10% перцентиль
+      медиана
+      90% перцентиль
+
+  10
+  1 2 3 4 5 6 7 8 9 10
+  2
+  6
+  10
+ *
 */
 
 #include <iostream>
@@ -10,7 +44,7 @@
 template<typename T>
 class DefaultComparator {
  public:
-  bool operator()(const T &first_element, const T &second_element) {
+  bool operator()(const T& first_element, const T& second_element) {
     if (first_element > second_element) {
       return true;
     } else {
@@ -24,7 +58,7 @@ int Partition(int* array, int left_idx, int right_idx) {
   if (left_idx == right_idx)
     return left_idx;
 
-  int p_idx = rand()%(right_idx - left_idx) + left_idx;  // 9, -2, - 10, 30, 33, 21, 40, 55, 50, 41
+  int p_idx = rand()%(right_idx - left_idx) + left_idx;
   std::swap(array[p_idx], array[right_idx]);
   int i = left_idx;
   int j = left_idx;
@@ -40,15 +74,14 @@ int Partition(int* array, int left_idx, int right_idx) {
   }
 
   int debug3 = array[right_idx];
-  while (j != right_idx) {  // Останавливается когда указывает на i
+  while (j < right_idx) {  // Останавливается когда указывает на i
     debug3 = array[right_idx];
-    if (/*array[j] <= array[right_idx]*/!comp(array[j], array[right_idx])) { // comp(array[j] < array[right_idx]
+    if (!comp(array[j], array[right_idx])) { // array[j] < array[right_idx]
       std::swap(array[i], array[j]);
       i++;
     }
     j++;
   }
-
   std::swap(array[i], array[j]);
   return i;  // индекс элемента в полученном массиве
 }
@@ -72,7 +105,20 @@ int kth_stat(int size_array, int* array, float less_then, Comparator comp = Comp
   return array[kth_stat_idx];
 }
 
-
+    class Solution {
+     public:
+      void FindPercentile(std::ostream& out, std::istream& in){
+        int size = 0;
+        in >> size;
+        int* array = new int[size];
+        for (int i = 0; i < size; ++i)
+          in >> array[i];
+        out << kth_stat<int>(size, array, 0.1) << std::endl;
+        out << kth_stat<int>(size, array, 0.5) << std::endl;
+        out << kth_stat<int>(size, array, 0.9) << std::endl;
+        delete[] array;
+      }
+    };
 
 void Tests() {
   constexpr int count_of_tests = 7;
@@ -93,52 +139,28 @@ void Tests() {
       {"1\n2\n3\n"},
       {"9\n33\n55\n"},
   };
+  Solution s;
   std::string buffer_string = "";
   int array_size = 0;
   std::ostringstream answer;
 
   for (int i = 0; i < count_of_tests; ++i) {
     answer.str("");
-    streams_string[i] >> array_size;
-    int* array = new int[array_size];
-    for (int j = 0; j < array_size; ++j)
-      streams_string[i] >> array[j];
-    answer << kth_stat<int>(array_size, array, 0.1) << std::endl;
-    answer << kth_stat<int>(array_size, array, 0.5) << std::endl;
-    answer << kth_stat<int>(array_size, array, 0.9) << std::endl;
+    s.FindPercentile(answer, streams_string[i]);
     buffer_string = answer.str();
-    std:: cout << buffer_string;
+    std::cout << buffer_string;
     if (buffer_string == answers[i]) {
       std::cout << "Test " << i << " OK" << std::endl;
     } else {
       std::cout << "Test " << i << " WA" << std::endl;
     }
-    delete[] array;
   }
-
 }
 int main()
 {
-  /*DefaultComparator<int> C;
-  constexpr int count_of_elements = 10;
-  int array[count_of_elements] = {10, 24, 31, 42, 54, 66, 7, 8, 9, 11};
-  int array1[count_of_elements] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-  int array2[10] = {9, -2, - 10, 30, 33, 21, 40, 55, 50, 41};
-  std::cout << Partition<int>(array2, 0, 9) << std::endl;
 
-  for (int i = 0; i < 10; ++i) {
-    std::cout << array2[i] << " ";
-  }
-  std::cout << std::endl;*/
-  int size = 0;
-  std::cin >> size;
-  int* array = new int[size];
-  for (int i = 0; i < size; ++i)
-    std::cin >> array[i];
-  std::cout << kth_stat<int>(size, array, 0.1) << std::endl;
-  std::cout << kth_stat<int>(size, array, 0.5) << std::endl;
-  std::cout << kth_stat<int>(size, array, 0.9) << std::endl;
   // Tests();
+  Solution s;
+  s.FindPercentile(std::cout, std::cin);
   return 0;
 }
-
