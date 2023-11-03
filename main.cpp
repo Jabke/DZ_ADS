@@ -213,6 +213,7 @@ class Solution {
     Queue queue;
     bool flag = true;
     int debug_buffer = 0;
+    int count_pop = 0;
     for (int i = 0; i < quantity_elements; ++i) {
       in >> method_selection;
       in >> expected_value;
@@ -220,6 +221,7 @@ class Solution {
         case 2:
           /*queue.OutQueue();
           queue.OutBuffer();*/
+          count_pop++;
           debug_buffer = queue.PopFront();
           if (expected_value == debug_buffer && flag) {
             flag = true;
@@ -247,9 +249,9 @@ class Solution {
 };
 
 void TestFunction() {
-  constexpr int count_of_tests = 21;
+  constexpr int count_of_tests = 27;
   std::istringstream streams_string[count_of_tests];
-  streams_string[20].str("3 3 44 3 50 2 44");
+  streams_string[0].str("3 3 44 3 50 2 44");
   streams_string[1].str("2 2 -1 3 10");
   streams_string[2].str("2 3 44 2 66");
   streams_string[3].str("5 2 -1 2 -1 3 44 3 -44 2 44");
@@ -269,9 +271,14 @@ void TestFunction() {
   streams_string[17].str("7 3 10 3 11 3 12 2 -1 2 11 2 12 2 -1");
   streams_string[18].str("8 2 2 2 11 3 10 3 -1 2 10 3 10 2 -1 2 10");
   streams_string[19].str("7 3 -2 3 -11 2 -2 2 -11 2 -10 3 -10 2 -10");
+  streams_string[20].str("15 3 96 2 96 3 3 2 3 3 91 2 91 3 3 3 44 2 3 3 17 2 44 3 141 2 17 3 106 3 108");
+  streams_string[21].str("15 3 10 3 20 3 30 3 40 3 50 2 10 2 20 3 55 3 61 2 30 2 40 2 50 2 55 2 61 2 -1");
+  streams_string[22].str("26 2 -1 2 -1 2 -1 2 -1 2 -1 3 10 3 20 3 30 3 40 3 50 3 60 2 10 2 20 3 70 3 80 2 30 2 40 2 50 2 60 2 70 2 80 2 -1 3 42 3 43 2 42 2 43");
+  streams_string[23].str("16 3 10 3 20 3 30 2 10 2 20 2 30 2 -1 2 -1 2 -1 2 -1 2 -1 2 -1 2 -1 2 -1 3 15 2 15");
+  streams_string[24].str("10 3 10 3 20 3 30 3 10 3 11 2 10 2 20 2 30 3 31 3 32");
+  streams_string[25].str("4 3 10 3 20 3 30 3 10");
+  streams_string[26].str("9 3 10 3 20 2 10 3 10 2 20 3 20 2 10 3 10 2 20");
 
-  // streams_string[10].str("9 3 5 3 4 3 6 2 5 2 4 3 7 3 8 2 6 2 7");
-  streams_string[0].str("15 3 96 2 96 3 3 2 3 3 91 2 91 3 3 3 44 2 3 3 17 2 44 3 141 2 17 3 106 3 108");
     // Значение не совпало где-то посередине
   Solution s;
   std::ostringstream answer;
@@ -305,7 +312,14 @@ void TestFunction() {
       {"NO"},
       {"NO"},
       {"NO"},
+      {"YES"},
+      {"YES"},
+      {"YES"},
+      {"YES"},
+      {"YES"},
+      {"YES"},
       {"YES"}
+
   };
 
   std::string buffer_string = "";
@@ -323,8 +337,8 @@ void TestFunction() {
 }
 
 int main() {
-  // TestFunction();
-  Solution s;
-  s.YesOrNo(std::cout, std::cin);
+  TestFunction();
+  /*Solution s;
+  s.YesOrNo(std::cout, std::cin);*/
   return 0;
 }
